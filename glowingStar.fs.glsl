@@ -26,14 +26,15 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     col += clamp(vec3(0.001 / diatance), 0., 1.) * 12.; // add glow
     col *= vec3(1, 1, 0);
 
+//-------------------------------------
+    //vec3 col = vec3(0.0, 0.0, 0.0);
     //diatance =>[-radiuis --- n]
-    // float diatance = length(uv) - radius;
+    //float diatance = length(uv) - radius;
     // //发光方法一
     // float glow = clamp(0.01 / diatance, 0., 1.);
-    // //发光方法二 效果不如第一种好 不能自由控制半径
-    // //-diatance => [-n --- radius]
-    // //float glow = smoothstep(-0.2, radius, -diatance);
-    // col += glow * 5.0;
-
+    // //发光方法二 效果不如第一种好 不能自由控制半径 -diatance => [-n --- radius]
+    //float glow = smoothstep(-0.1, radius, -diatance);
+    //col += glow * 5.0;
+//-------------------------------------
     fragColor = vec4(col, 1.0); // output color 
 }

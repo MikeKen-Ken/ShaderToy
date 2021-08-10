@@ -59,7 +59,7 @@ vec3 drawScene(vec2 uv) {
     float d1 = sdCircle(uv, 0.1, vec2(0., 0.));//点到圆周的距离 
     float d2 = sdSquare(uv, 0.1, vec2(0.1, 0));//点到方块周的距离
     float res; // result
-    //res = d1;//圆
+    res = d1;//圆
     //res = d2;//方块
     //res = min(d1, d2); //min代表圆和方块的合集
     //res = max(d1, d2); //max代表圆和方块的交集
@@ -71,9 +71,10 @@ vec3 drawScene(vec2 uv) {
     //res = opSymX(uv, 0.1);
     // res = opRep(uv, 0.05, vec2(0.2, 0.2));
     // res = opRepLim(uv, 0.05, 0.15, vec2(2, 2));
-    res = opDisplace(uv, 0.1);
-    res = step(0., res); // Same as res > 0. ? 1. : 0.;
-    col = mix(vec3(1, 0, 0), col, res);
+    // res = opDisplace(uv, 0.1);
+
+    res = smoothstep(0., .04, res); // Same as res > 0. ? 1. : 0.;
+    col = mix(vec3(0.502, 0.0275, 0.0275), col, res);
     return col;
 }
 
