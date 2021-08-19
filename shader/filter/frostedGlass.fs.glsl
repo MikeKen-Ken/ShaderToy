@@ -22,13 +22,14 @@ vec2 dynamicDist(vec2 uv) {
 }
 
 vec2 staticDist(vec2 uv) {
-     //静态
-    vec4 target = texture(iChannel1, uv * 5.);
-    return uv + vec2(target.x * blurStrength, target.y * blurStrength);
+    //这里uv * 5.的原因是，uv*的越大，对应在iChannel1上的pixel范围越少
+    //使得pixle之间的uv改变就越小，图片看起来就更自然
+    //极端情况可能所有的pixel对应一个uv,此时显示原图
+    return uv + texture(iChannel1, uv * 5.).xy * blurStrength;
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     // fragColor = texture(iChannel0, dynamicDist(uv));
-    fragColor = texture(iChannel0, staticDist(uv));
+    fragColor = texture(iChannel0, staticDist(uv) - blurStrength * 0.25);
 }
