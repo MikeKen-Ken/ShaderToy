@@ -20,12 +20,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     uv -= 0.5;
     uv.x *= iResolution.x / iResolution.y;
     float radius = 0.2;
-
     float diatance = sdStar5(rotate(uv, iTime), 0.12, 0.45);
     vec3 col = vec3(step(0., -diatance));
     col += clamp(vec3(0.001 / diatance), 0., 1.) * 12.; // add glow
     col *= vec3(1, 1, 0);
-
 //-------------------------------------
     //vec3 col = vec3(0.0, 0.0, 0.0);
     //diatance =>[-radiuis --- n]
