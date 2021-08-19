@@ -15,7 +15,8 @@ const float strength = 0.5;
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     float displacement = texture2D(iChannel3, uv).r * strength;
-    float period = (sin(iTime) + 1.) / 2.; // 0-1
+    float period = (cos(iTime) + 1.) / 2.; // 0-1
+    //strength强度越大 对应的y值偏移越大
     vec2 uvFrom = vec2(uv.x, uv.y + period * displacement);
     vec2 uvTo = vec2(uv.x, uv.y - (1.0 - period) * displacement);
     fragColor = mix(texture(iChannel0, uvFrom), texture(iChannel1, uvTo), period);
