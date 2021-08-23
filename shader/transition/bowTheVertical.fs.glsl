@@ -2,57 +2,52 @@
 #iChannel1 "file://imgs/dva1.jpg"
 
 float progress;
+vec2 topTraingle1P1;
+vec2 topTraingle1P2;
+vec2 topTraingle1P3;
+vec2 btoTraingle2P1;
+vec2 btoTraingle2P2;
+vec2 btoTraingle2P3;
 
-float check(vec2 p1, vec2 p2, vec2 p3) {
-    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-}
-
-bool PointInTriangle(vec2 pt, vec2 p1, vec2 p2, vec2 p3) {
-    bool b1, b2, b3;
-    b1 = check(pt, p1, p2) < 0.0;
-    b2 = check(pt, p2, p3) < 0.0;
-    b3 = check(pt, p3, p1) < 0.0;
-    return ((b1 == b2) && (b2 == b3));
-}
-
-bool in_top_triangle(vec2 p) {
-    vec2 vertex1, vertex2, vertex3;
-    vertex1 = vec2(0.5, progress);
-    vertex2 = vec2(0.5 - progress, 0.0);
-    vertex3 = vec2(0.5 + progress, 0.0);
-    if(PointInTriangle(p, vertex1, vertex2, vertex3)) {
+bool isPointInTriangle(vec2 pt, vec2 p1, vec2 p2, vec2 p3) {
+    vec3 v3pt = vec3(pt, 0.);
+    vec3 v3p1 = vec3(p1, 0.);
+    vec3 v3p2 = vec3(p2, 0.);
+    vec3 v3p3 = vec3(p3, 0.);
+    float sign1 = cross(v3pt - v3p1, (v3p2 - v3p1)).z;
+    float sign2 = cross(v3pt - v3p2, (v3p3 - v3p2)).z;
+    float sign3 = cross(v3pt - v3p3, (v3p1 - v3p3)).z;
+    if(sign(sign1) == sign(sign2) && sign(sign2) == sign(sign3)) {
         return true;
     }
     return false;
 }
 
-bool in_bottom_triangle(vec2 p) {
-    vec2 vertex1, vertex2, vertex3;
-    vertex1 = vec2(0.5, 1.0 - progress);
-    vertex2 = vec2(0.5 - progress, 1.0);
-    vertex3 = vec2(0.5 + progress, 1.0);
-    if(PointInTriangle(p, vertex1, vertex2, vertex3)) {
-        return true;
-    }
-    return false;
+bool inTopTriangle(vec2 p) {
+    return isPointInTriangle(p, topTraingle1P1, topTraingle1P2, topTraingle1P3);
 }
 
-float blur_edge(vec2 bot1, vec2 bot2, vec2 top, vec2 testPt) {
-    vec2 lineDir = bot1 - top;
-    vec2 perpDir = vec2(lineDir.y, -lineDir.x);
-    vec2 dirToPt1 = bot1 - testPt;
-    float dist1 = abs(dot(normalize(perpDir), dirToPt1));
+bool inBottomTriangle(vec2 p) {
+    return isPointInTriangle(p, btoTraingle2P1, btoTraingle2P2, btoTraingle2P3);
+}
 
-    lineDir = bot2 - top;
-    perpDir = vec2(lineDir.y, -lineDir.x);
-    dirToPt1 = bot2 - testPt;
-    float min_dist = min(abs(dot(normalize(perpDir), dirToPt1)), dist1);
+float blurEdge(vec2 top, vec2 p1, vec2 p2, vec2 uv) {
+    //求点到两个边的距离，当距离小于一定范围的时候，做模糊化处理
+    vec2 topToP1 = p1 - top;
+    vec2 uvToP1 = p1 - uv;
+    float angle1 = abs(dot(topToP1, uvToP1)) / (length(topToP1) * length(uvToP1));
+    float distanceToP1 = sin(acos(angle1) * length(uvToP1));
 
+    vec2 topToP2 = p2 - top;
+    vec2 uvToP2 = p2 - uv;
+    float angle2 = abs(dot(topToP2, uvToP2)) / (length(topToP2) * length(uvToP2));
+    float distanceToP2 = sin(acos(angle2)) * length(uvToP2);
+
+    float min_dist = min(distanceToP1, distanceToP2);
     if(min_dist < 0.005) {
         return min_dist / 0.005;
-    } else {
-        return 1.0;
-    };
+    }
+    return 1.0;
 }
 
 vec4 getFromColor(vec2 uv) {
@@ -64,38 +59,27 @@ vec4 getToColor(vec2 uv) {
 }
 
 vec4 getColor(vec2 uv) {
-    if(in_top_triangle(uv)) {
-        if(progress < 0.1) {
-            return getFromColor(uv);
-        }
-        if(uv.y < 0.5) {
-            vec2 vertex1 = vec2(0.5, progress);
-            vec2 vertex2 = vec2(0.5 - progress, 0.0);
-            vec2 vertex3 = vec2(0.5 + progress, 0.0);
-            return mix(getFromColor(uv), getToColor(uv), blur_edge(vertex2, vertex3, vertex1, uv));
-        } else {
-            if(progress > 0.0) {
-                return getToColor(uv);
-            } else {
-                return getFromColor(uv);
-            }
-        }
-    } else if(in_bottom_triangle(uv)) {
-        if(uv.y >= 0.5) {
-            vec2 vertex1 = vec2(0.5, 1.0 - progress);
-            vec2 vertex2 = vec2(0.5 - progress, 1.0);
-            vec2 vertex3 = vec2(0.5 + progress, 1.0);
-            return mix(getFromColor(uv), getToColor(uv), blur_edge(vertex2, vertex3, vertex1, uv));
-        } else {
-            return getFromColor(uv);
-        }
-    } else {
-        return getFromColor(uv);
+    if(inTopTriangle(uv) && uv.y < 0.5) {
+        //模糊边界
+        return mix(getFromColor(uv), getToColor(uv), blurEdge(topTraingle1P1, topTraingle1P2, topTraingle1P3, uv));
     }
+    if(inBottomTriangle(uv) && uv.y >= 0.5) {
+        return mix(getFromColor(uv), getToColor(uv), blurEdge(btoTraingle2P1, btoTraingle2P2, btoTraingle2P3, uv));
+    }
+    return getFromColor(uv);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     progress = (cos(iTime) + 1.) / 2.;
+
+    topTraingle1P1 = vec2(0.5, progress);
+    topTraingle1P2 = vec2(0.5 - progress, 0.0);
+    topTraingle1P3 = vec2(0.5 + progress, 0.0);
+
+    btoTraingle2P1 = vec2(0.5, 1.0 - progress);
+    btoTraingle2P2 = vec2(0.5 - progress, 1.0);
+    btoTraingle2P3 = vec2(0.5 + progress, 1.0);
+
     fragColor = getColor(uv);
 }
