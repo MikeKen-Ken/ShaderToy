@@ -20,13 +20,13 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     //一个progress控制径像模糊效果，一个控制图片切换，图片切换速度应该未镜像速度1/2；
     float strengthProgress = (cos(iTime * 2. - PI) + 1.) / 2.;
     float textureProgress = (cos(iTime - PI) + 1.) / 2.;
-    float strength = strength * strengthProgress;
+    float blurStrength = strength * strengthProgress;
     float totalWeight = 0.0;
     float offset = rand(uv, 0.);
     for(float t = 0.0; t <= 20.0; t++) {
         float percent = (t + offset) / 20.0; // 0 - 1.05
         float weight = percent - percent * percent;
-        vec2 dynamicUv = uv + toCenter * percent * strength;
+        vec2 dynamicUv = uv + toCenter * percent * blurStrength;
         vec4 targetColor = mix(texture(iChannel0, dynamicUv), texture(iChannel1, dynamicUv), textureProgress);
         blurColor += targetColor.rgb * weight;
         totalWeight += weight;

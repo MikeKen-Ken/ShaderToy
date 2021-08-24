@@ -73,13 +73,14 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     progress = (cos(iTime) + 1.) / 2.;
 
+    //左右两个定点分别从0.49 0.51作为起点的原因，是因为左右两边会出现未完全移出的三角
     topTraingle1P1 = vec2(0.5, progress);
-    topTraingle1P2 = vec2(0.5 - progress, 0.0);
-    topTraingle1P3 = vec2(0.5 + progress, 0.0);
+    topTraingle1P2 = vec2(0.49 - progress, 0.0);
+    topTraingle1P3 = vec2(0.51 + progress, 0.0);
 
     btoTraingle2P1 = vec2(0.5, 1.0 - progress);
-    btoTraingle2P2 = vec2(0.5 - progress, 1.0);
-    btoTraingle2P3 = vec2(0.5 + progress, 1.0);
+    btoTraingle2P2 = vec2(0.49 - progress, 1.0);
+    btoTraingle2P3 = vec2(0.51 + progress, 1.0);
 
     fragColor = getColor(uv);
 }
